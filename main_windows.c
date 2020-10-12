@@ -18,7 +18,7 @@ Leandro Higa:
 #include <unistd.h> // para utilizar 'getch'
 #include <locale.h>
 #define N 5
-float valor_total; // TOTAL DOS PRODUTOS SELECIONADOS
+float valor_total; // (GLOBAL) TOTAL DOS PRODUTOS SELECIONADOS
 /*
 Eu identifiquei 3 estruturas diferentes que precisamos trabalhar:
 - Produto [CodProd / NomeProd / CustoProd] >> Eu vi que você já montou ela e daí teríamos nossa base de produtos a partir dela.
@@ -337,7 +337,7 @@ int exibe_pedidos(int quant){
 }
 
 
-//MÓDULO DE PAGAMENTO
+//MÓDULO DE PAGAMENTO | INCOMPLETO
 int confirmar_pedido(){
 	int pagamento=0,parcela=0;
 
