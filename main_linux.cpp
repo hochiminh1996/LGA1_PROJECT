@@ -1,35 +1,9 @@
-/*
-Leandro Higa (atualizado - 7-out.-2020):
->> Perceba que todas as funções que foram criadas estão abaixo de 'main' e se
-   eu preciso de uma função qualquer dentro de outra função ou na própria 'main',
-   eu declaro ela antes de tudo. Vi pela internet que esse é um padrão recomendado.
->> É preciso checar se a função 'setlocale' precisa estar apenas na função 'main'
-   ou deve estar em todas as funções.
-
-Leandro Higa (atualizado - 11-out.-2020):
->> Troquei de C para C++ pois assim será possível utilizar variáveis 'bool' mais
-   facilmente.
->> Acrescentei o módulo 'cobranca', mas ainda não montei os sub-módulos dele pois
-   quero ver como você montou as variáveis que inputarão as funções do módulo
-   'cobranca'.
->> Agora nosso menu está num arquivo .txt chamado menu_produtos.txt. Veja como eu
-   faço para trazer do arquivo e jogar as informações dentro da variável
-   'produto.menu'.
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h> // para utilizar 'system'
 //#include <conio.h> // WINDOWS - para utlizar 'getch'
 #include <termios.h> // LINUX - para utilizar 'getch'
 #include <unistd.h> // LINUX - para utilizar 'getch'
 //#include <locale.h> // WINDOWS - para utilizar 'setlocale'
-
-/*
-Nas estruturas montadas, observa apenas 'produto', 'lancamento'
-e 'pagamento' pois as outras eu criei, mas serão usadas nos outros
-módulos apenas. Só queria deixar registrado já.
-*/
 
 struct produto // estrutura para formar a lista de produtos
 {
@@ -76,46 +50,36 @@ struct entrega // estrutura para formar os pedidos a serem entregues
 
 struct produto menu[100] = {};
 
-//struct lancamento l_pedido[100] = {}; // cria um pedido com lancamentos limpos
+struct lancamento l_pedido[100] = {}; // cria um pedido com lancamentos limpos
 
-//struct pagamento p_pedido = {}; // cria um pedido com pagamento limpo
+struct pagamento p_pedido = {}; // cria um pedido com pagamento limpo
 
-//int indice_l = 0; // para acompanhar as linhas já escritas em 'l_pedido'
+int indice_l = 0; // para acompanhar as linhas já escritas em 'l_pedido'
 
 int n_pedido_atual;
-
-struct lancamento l_pedido[100] = {{123, 10, "X_BURGUER",    12.00, 2, 24.00},
-                                   {123, 20, "BATATA_FRITA", 10.00, 3, 30.00},
-                                   {123, 31, "GUARANA",       8.00, 1,  8.00},
-                                   {123, 32, "FANTA_UVA",     8.50, 1,  8.50}};
-
-int indice_l = 4;
-
-struct pagamento p_pedido = {123, 70.5, {}, {}, {}};
 
 int main (void)
 {
 //    setlocale(LC_ALL,"PORTUGUESE"); // WINDOWS - para caracteres especiais
 
     void download_menu(void);
-    void vendas(void);
+    void tela_inicial(void);
     void novo_n_pedido(void);
 
     download_menu();
 
     novo_n_pedido();
 
-    vendas();
+    tela_inicial();
 
     return 0;
 }
 
-void vendas(void)
+void tela_inicial(void)
 {
-    void mostrar_menu(void);
     void mostrar_pedido(void);
     int getch(void); // LINUX
-    void limpar_pedido(void);
+    void cancelar_pedido(void);
     void reg_lancamento(void);
     void rm_lancamento(void);
     void confirmar_pedido(void);
@@ -124,14 +88,9 @@ void vendas(void)
 
     do
     {
-        printf("\n===MONTE O PEDIDO===\n");
-
-        mostrar_menu();
+        printf("\n>>>TELA INICIAL\n");
 
         mostrar_pedido();
-
-        printf("\nN_pedido = %i\n", n_pedido_atual);
-        printf("\nN_lancamentos = %i\n", indice_l);
 
         printf("\nOpções:\n");
         printf("(0) - Cancelar pedido\n");
@@ -144,24 +103,8 @@ void vendas(void)
         switch(opcao)
         {
             case '0':
-                char resposta1;
-                do
-                {
                 system("clear || cls");
-                printf("\n===ATENCAO===\n");
-                printf("\nTem certeza que deseja CANCELAR o pedido? (0 - voltar / 1 - sim) ");
-                resposta1 = getch();
-                } while (resposta1 != '0' && resposta1 != '1');
-                if (resposta1 == '1')
-                {
-                    limpar_pedido();
-                    system("clear || cls");
-                    printf("\nPedido CANCELADO.\n");
-                }
-                printf("\nPressione qualquer tecla para voltar...");
-                getch();
-                opcao = '\0';
-                system("clear || cls");
+                cancelar_pedido();
                 break;
             case '1':
                 system("clear || cls");
@@ -183,6 +126,10 @@ void vendas(void)
                 system("clear || cls");
                 confirmar_pedido();
                 break;
+            case 27:
+                system("clear || cls");
+                printf("\nFechando sistema...\n");
+                break;
             default:
                 system("clear || cls");
                 printf("\nOpção inválida.\n");
@@ -191,7 +138,7 @@ void vendas(void)
                 system("clear || cls");
                 break;
         }
-    } while (opcao != '0' && opcao != '1' && opcao != '2' && opcao != '3');
+    } while (opcao != '0' && opcao != '1' && opcao != '2' && opcao != '3' && opcao != 27);
 }
 
 int getch(void) // LINUX - nem me pergunte como funciona, só sei que funciona kkkk.
@@ -248,29 +195,175 @@ void download_menu (void) // insere os dados de 'menu_produtos.txt' na variável
 
 void mostrar_menu (void) // mostra os itens do menu
 {
-    int i = 0; // índice do vetor menu
-
-    printf("\n==MENU==\n");
+    int i = 0, ii; // índice do vetor menu e índice vetor string
 
     if (menu[i].CodProd == '\0') // caso não haja itens no menu
-        printf("\nNão há itens no menu.\n\n");
+        printf("\nNão há itens no menu.\n");
     else
     {
-        printf("\nCódigo\tNome do Produto\tCusto\n");
+        printf("\n============MENU=============");
+        printf("\nCódigo Nome do Produto  Custo\n");
         do
         {
-            printf("%i\t%15s\t%.2f\n", menu[i].CodProd, menu[i].NomeProd, menu[i].CustoProd);
+            printf("%i     ", menu[i].CodProd);
+
+            ii = 0;
+            while (ii < 15)
+            {
+                if (menu[i].NomeProd[ii] != '\0')
+                    printf("%c", menu[i].NomeProd[ii]);
+                else
+                    printf(" ");
+                ++ii;
+            }
+            printf(" ");
+
+            if (menu[i].CustoProd < 10)
+                printf("  %.2f\n", menu[i].CustoProd);
+            else if (menu[i].CustoProd < 100)
+                printf(" %.2f\n" , menu[i].CustoProd);
+            else
+                printf("%.2f\n"  , menu[i].CustoProd);
+
             ++i;
         } while (menu[i].CodProd != '\0');
+
+        printf("=============================\n");
     }
 }
 
 void mostrar_pedido(void)
 {
-    printf("\nMostrar pedido na tela\n");
-    /*
-    Aqui devemos fazer com que na tela apareça as informações dos lançamentos feitos e o nº do pedido.
-    */
+
+    int ii;
+
+    if(indice_l == 0)
+    {
+        printf("\nPedido Nº %i", n_pedido_atual);
+        printf("\nNão há lançamentos no pedido.\n");
+    }
+    else
+    {
+        printf("\n==================SEU PEDIDO==================");
+        printf("\n                              Pedido Nº ");
+
+        if (n_pedido_atual < 10)
+            printf("     %i\n", n_pedido_atual);
+        else if (n_pedido_atual < 100)
+            printf("    %i\n" , n_pedido_atual);
+        else if (n_pedido_atual < 1000)
+            printf("   %i\n"  , n_pedido_atual);
+        else if (n_pedido_atual < 10000)
+            printf("  %i\n"   , n_pedido_atual);
+        else if (n_pedido_atual < 100000)
+            printf(" %i\n"    , n_pedido_atual);
+        else
+            printf("%i\n"     , n_pedido_atual);
+
+
+        printf("\nCodProd Nome do Produto   Custo  Qtd  SubTotal\n");
+
+        for(int i = 0; i < indice_l; ++i)
+        {
+            printf("%i      ",   l_pedido[i].CodProd);
+
+            ii = 0;
+            while (ii < 15)
+            {
+                if (l_pedido[i].NomeProd[ii] != '\0')
+                    printf("%c", l_pedido[i].NomeProd[ii]);
+                else
+                    printf(" ");
+                ++ii;
+            }
+            printf(" ");
+
+            if (l_pedido[i].CustoProd < 10)
+                printf("   %.2f ", l_pedido[i].CustoProd);
+            else if (l_pedido[i].CustoProd < 100)
+                printf("  %.2f " , l_pedido[i].CustoProd);
+            else
+                printf(" %.2f "  , menu[i].CustoProd);
+
+            if (l_pedido[i].Qtd < 10)
+                printf("   %i ", l_pedido[i].Qtd);
+            else if (l_pedido[i].Qtd < 100)
+                printf("  %i " , l_pedido[i].Qtd);
+            else
+                printf(" %i "  , l_pedido[i].Qtd);
+
+            if (l_pedido[i].SubTotal < 10)
+                printf("     %.2f\n", l_pedido[i].SubTotal);
+            else if (l_pedido[i].SubTotal < 100)
+                printf("    %.2f\n" , l_pedido[i].SubTotal);
+            else if (l_pedido[i].SubTotal < 1000)
+                printf("   %.2f\n"  , l_pedido[i].SubTotal);
+            else if (l_pedido[i].SubTotal < 10000)
+                printf("  %.2f\n"   , l_pedido[i].SubTotal);
+            else
+                printf(" %.2f\n"    , l_pedido[i].SubTotal);
+        }
+        printf("\n                               Total ");
+
+        if (p_pedido.Total < 10)
+            printf("     %.2f\n", p_pedido.Total);
+        else if (p_pedido.Total < 100)
+            printf("    %.2f\n" , p_pedido.Total);
+        else if (p_pedido.Total < 1000)
+            printf("   %.2f\n"  , p_pedido.Total);
+        else if (p_pedido.Total < 10000)
+            printf("  %.2f\n"   , p_pedido.Total);
+        else if (p_pedido.Total < 100000)
+            printf(" %.2f\n"    , p_pedido.Total);
+        else
+            printf("%.2f\n"     , p_pedido.Total);
+        printf("==============================================\n");
+    }
+}
+
+void mostrar_lancamento(int indice_lancamento)
+{
+    int i = indice_lancamento, ii = 0;
+
+    printf("\nCodProd Nome do Produto   Custo  Qtd  SubTotal\n");
+
+    printf("%i      ",   l_pedido[i].CodProd);
+
+    ii = 0;
+    while (ii < 15)
+    {
+            if (l_pedido[i].NomeProd[ii] != '\0')
+                printf("%c", l_pedido[i].NomeProd[ii]);
+            else
+                printf(" ");
+            ++ii;
+    }
+    printf(" ");
+
+    if (l_pedido[i].CustoProd < 10)
+        printf("   %.2f ", l_pedido[i].CustoProd);
+    else if (l_pedido[i].CustoProd < 100)
+        printf("  %.2f " , l_pedido[i].CustoProd);
+    else
+        printf(" %.2f "  , menu[i].CustoProd);
+
+    if (l_pedido[i].Qtd < 10)
+        printf("   %i ", l_pedido[i].Qtd);
+    else if (l_pedido[i].Qtd < 100)
+        printf("  %i " , l_pedido[i].Qtd);
+    else
+        printf(" %i "  , l_pedido[i].Qtd);
+
+    if (l_pedido[i].SubTotal < 10)
+        printf("     %.2f\n", l_pedido[i].SubTotal);
+    else if (l_pedido[i].SubTotal < 100)
+        printf("    %.2f\n" , l_pedido[i].SubTotal);
+    else if (l_pedido[i].SubTotal < 1000)
+        printf("   %.2f\n"  , l_pedido[i].SubTotal);
+    else if (l_pedido[i].SubTotal < 10000)
+        printf("  %.2f\n"   , l_pedido[i].SubTotal);
+    else
+        printf(" %.2f\n"    , l_pedido[i].SubTotal);
 }
 
 void limpar_pedido(void)
@@ -301,13 +394,190 @@ void limpar_pedido(void)
     novo_n_pedido();
 }
 
+void limpar_lancamento(int indice_lancamento)
+{
+    void calcula_total(void);
+
+    l_pedido[indice_lancamento].CodProd = '\0';
+    for (int i = 0; i < 15; ++i)
+        l_pedido[indice_lancamento].NomeProd[i] = '\0';
+    l_pedido[indice_lancamento].CustoProd = '\0';
+    l_pedido[indice_lancamento].Qtd = '\0';
+
+    while (l_pedido[indice_lancamento + 1].CodProd != '\0')
+    {
+        l_pedido[indice_lancamento].CodProd = l_pedido[indice_lancamento + 1].CodProd;
+        for (int i = 0; i < 15; ++i)
+            l_pedido[indice_lancamento].NomeProd[i] = l_pedido[indice_lancamento + 1].NomeProd[i];
+        l_pedido[indice_lancamento].CustoProd = l_pedido[indice_lancamento + 1].CustoProd;
+        l_pedido[indice_lancamento].Qtd = l_pedido[indice_lancamento + 1].Qtd;
+
+        l_pedido[indice_lancamento + 1].CodProd = '\0';
+        for (int i = 0; i < 15; ++i)
+            l_pedido[indice_lancamento + 1].NomeProd[i] = '\0';
+        l_pedido[indice_lancamento + 1].CustoProd = '\0';
+        l_pedido[indice_lancamento + 1].Qtd = '\0';
+
+        ++indice_lancamento;
+    }
+
+    indice_l = indice_lancamento;
+
+    calcula_total();
+
+}
+
+void cancelar_pedido(void)
+{
+    void tela_inicial(void);
+
+    char resposta;
+
+    if (indice_l == 0)
+    {
+        printf("\nNão há lançamentos. Portanto, não é possível CANCELAR o pedido.\n");
+    }
+    else
+    {
+        do
+        {
+            printf("\n>>>ATENCAO!!!\n");
+            printf("\nTem certeza que deseja CANCELAR o pedido? (0 - voltar / 1 - sim) ");
+            resposta = getch();
+        } while (resposta != '0' && resposta != '1');
+        if (resposta == '1')
+        {
+            limpar_pedido();
+            system("clear || cls");
+            printf("\nPedido CANCELADO.\n");
+        }
+        printf("\n");
+    }
+    printf("\nPressione qualquer tecla para voltar...");
+    getch();
+    system("clear || cls");
+    tela_inicial();
+}
+
 void reg_lancamento(void)
 {
-    printf("\nVocê escolheu REGISTRAR lançamento.\n");
-    /*
-    Este seria o sub-módulo 'reg_lancamento' que tem no mapa lógico.
-    Creio que deva ser montado com base nele. É possível aproveitar funções que você já montou.
-    */
+    void mostrar_menu(void);
+    void mostrar_pedido(void);
+    void limpa_buffer(void);
+    void tela_inicial(void);
+    int getch(void);
+    void limpar_lancamento(int indice_lancamento);
+    int busca_CodProd(int CodProd);
+    void calcula_total(void);
+    void mostrar_lancamento(int indice_lancamento);
+
+    int indice_CodProd;
+    char conf_lancamento;
+
+    printf("\n>>>REGISTRO DE LANCAMENTOS\n");
+
+    mostrar_menu();
+
+    mostrar_pedido();
+
+    printf("\nInsira o código do produto (-1 para voltar): ");
+    scanf("%i", &l_pedido[indice_l].CodProd);
+    limpa_buffer();
+
+    if (l_pedido[indice_l].CodProd < 0)
+    {
+        limpar_lancamento(indice_l);
+        system("clear || cls");
+        printf("\nVoltando para a TELA INICIAL...\n");
+        printf("\nPressione qualquer tecla para voltar...");
+        getch();
+        system("clear || cls");
+        tela_inicial();
+    }
+    else
+    {
+        indice_CodProd = busca_CodProd (l_pedido[indice_l].CodProd);
+
+        if (indice_CodProd == -1)
+        {
+            system("clear || cls");
+            printf("\nCódigo de produto digitado INVALIDO.\n");
+            printf("\nPor favor, digite um código válido.\n");
+            getch();
+            system("clear || cls");
+            limpar_lancamento(indice_l);
+            reg_lancamento();
+        }
+        else
+        {
+            for (int i = 0; i < 15; ++i)
+                l_pedido[indice_l].NomeProd[i] = menu[indice_CodProd].NomeProd[i];
+            l_pedido[indice_l].NomeProd[15] = '\0';
+            l_pedido[indice_l].CustoProd = menu[indice_CodProd].CustoProd;
+
+            printf("\nInsira a quantidade desejada (-1 para voltar): ");
+            scanf("%i", &l_pedido[indice_l].Qtd);
+            limpa_buffer();
+
+            if (l_pedido[indice_l].Qtd < 0)
+            {
+                limpar_lancamento(indice_l);
+                system("clear || cls");
+                printf("\nVoltando para a REGISTRO DE LANCAMENTOS...\n");
+                printf("\nPressione qualquer tecla para voltar...");
+                getch();
+                system("clear || cls");
+                reg_lancamento();
+            }
+            else if (l_pedido[indice_l].Qtd < 1 || l_pedido[indice_l].Qtd > 100)
+            {
+                limpar_lancamento(indice_l);
+                system("clear || cls");
+                printf("\nLimite mínimo por lançamento  = 1.");
+                printf("\nLimite máximo por lançamento  = 100.\n");
+                printf("\nPressione qualquer tecla para voltar...");
+                getch();
+                system("clear || cls");
+                reg_lancamento();
+            }
+            else
+            {
+                l_pedido[indice_l].SubTotal = l_pedido[indice_l].CustoProd * l_pedido[indice_l].Qtd;
+
+                do
+                {
+                    system("cls || clear");
+                    mostrar_lancamento(indice_l);
+                    printf("\nConfirmar lançamento (0 - não / 1 - sim)?\n");
+                    conf_lancamento = getch();
+                } while (conf_lancamento != '0' && conf_lancamento != '1');
+
+                switch(conf_lancamento)
+                {
+                    case '0':
+                        limpar_lancamento(indice_l);
+                        system("clear || cls");
+                        printf("\nVoltando para a REGISTRO DE LANCAMENTOS...\n");
+                        printf("\nPressione qualquer tecla para voltar...");
+                        getch();
+                        system("clear || cls");
+                        reg_lancamento();
+                        break;
+                    case '1':
+                        l_pedido[indice_l].N_pedido = n_pedido_atual;
+                        ++indice_l;
+                        calcula_total();
+                        system("clear || cls");
+                        printf("\nLançamento REGISTRADO!\n");
+                        printf("\nPressione qualquer tecla para continuar...");
+                        getch();
+                        system("clear || cls");
+                        reg_lancamento();
+                        break;
+                }
+            }
+        }
+    }
 }
 
 void rm_lancamento(void)
@@ -322,17 +592,17 @@ void rm_lancamento(void)
 void confirmar_pedido(void)
 {
     int getch(void); // LINUX
-    void vendas(void);
+    void tela_inicial(void);
     void cobranca(void);
 
-    if(l_pedido[0].N_pedido == '\0')
+    if(indice_l == 0)
     {
         system("clear || cls");
         printf("\nNão há itens lançados no pedido.\n");
         printf("\nPressione qualquer tecla para voltar...");
         getch();
         system("clear || cls");
-        vendas();
+        tela_inicial();
     }
     else
     {
@@ -348,7 +618,7 @@ void cobranca(void)
 {
     void mostrar_pedido(void);
     int getch(void); //LINUX
-    void vendas(void);
+    void tela_inicial(void);
     void pgto_dinheiro(void);
     void pgto_cheque(void);
     void pgto_debito(void);
@@ -358,7 +628,7 @@ void cobranca(void)
 
     do
     {
-        printf("\n===FORMA DE PAGAMENTO===\n");
+        printf("\n>>>FORMA DE PAGAMENTO\n");
 
         mostrar_pedido();
 
@@ -375,11 +645,11 @@ void cobranca(void)
         {
             case '0':
                 system("clear || cls");
-                printf("\nVoltando para a MONTAGEM DO PEDIDO...\n");
+                printf("\nVoltando para a TELA INICIAL...\n");
                 printf("\nPressione qualquer tecla para voltar...");
                 getch();
                 system("clear || cls");
-                vendas();
+                tela_inicial();
                 break;
             case '1':
                 system("clear || cls");
@@ -432,13 +702,15 @@ void pgto_dinheiro(void)
     void cobranca(void);
     void get_string (char linha[]);
     void upload_pedido(void);
+    void tela_inicial(void);
+    void finalizar_pedido(void);
 
     float valor_recebido, troco;
-    char conf_troco;
+    char conf_pedido;
 
-    printf("\n===PAGAMENTO EM DINHEIRO===\n");
-    printf("\nValor a receber: %.2f\n", p_pedido.Total);
-    printf("\nInsira o valor recebido (digite -1 para voltar): ");
+    printf("\n>>>PAGAMENTO EM DINHEIRO\n");
+    printf("\nValor TOTAL da compra: %.2f\n", p_pedido.Total);
+    printf("\nInsira o dinheiro (digite -1 para voltar): ");
     scanf("%f", &valor_recebido);
     limpa_buffer();
 
@@ -455,7 +727,6 @@ void pgto_dinheiro(void)
     else if (valor_recebido < p_pedido.Total)
     {
         system("clear || cls");
-        printf("\n===PAGAMENTO EM DINHEIRO===\n");
         printf("\nValor insuficiente.\n");
         printf("\nPressione qualquer tecla para voltar...");
         getch();
@@ -469,15 +740,15 @@ void pgto_dinheiro(void)
         do
         {
             system("clear || cls");
-            printf("\n===PAGAMENTO EM DINHEIRO===\n");
-            printf("\nValor recebido: %.2f\n", valor_recebido);
-            printf("\nValor do troco: %.2f\n", troco);
-            printf("\nTroco entregue? (0 - voltar / 1 - sim) ");
-            scanf("%c", &conf_troco);
+            printf("\n>>>PAGAMENTO EM DINHEIRO\n");
+            printf("\nValor entregue: %.2f\n", valor_recebido);
+            printf("\nValor do troco a ser recebido: %.2f\n", troco);
+            printf("\nConfirmar? (0 - voltar / 1 - sim) ");
+            scanf("%c", &conf_pedido);
             limpa_buffer();
-        } while (conf_troco != '0' && conf_troco != '1');
+        } while (conf_pedido != '0' && conf_pedido != '1');
 
-        switch(conf_troco)
+        switch(conf_pedido)
         {
             case '0':
                 system("clear || cls");
@@ -487,28 +758,17 @@ void pgto_dinheiro(void)
                 system("clear || cls");
                 troco = '\0';
                 valor_recebido = '\0';
-                conf_troco = '\0';
+                conf_pedido = '\0';
                 pgto_dinheiro();
                 break;
             case '1':
                 system("clear || cls");
-                printf("\n===FINALIZACAO DE PEDIDO===\n");
-                printf("\nDigite o nome do CLIENTE: ");
-                get_string (p_pedido.NomeCliente);
+                p_pedido.N_pedido = n_pedido_atual;
                 p_pedido.FormaPgto = '1';
                 for (int i = 0; i < 16; ++i)
                     p_pedido.N_cartao[i] = '0';
                 p_pedido.N_cartao[16] = '\0';
-                printf("\nPedido CONFIRMADO!\n");
-                printf("\nPagamento REALIZADO!\n");
-                troco = '\0';
-                valor_recebido = '\0';
-                conf_troco = '\0';
-                upload_pedido();
-                printf("\nPressione qualquer tecla para montar um NOVO PEDIDO...");
-                getch();
-                system("clear || cls");
-                vendas();
+                finalizar_pedido();
                 break;
         }
     }
@@ -522,49 +782,70 @@ void pgto_cheque(void)
     void cobranca(void);
     void get_string (char linha[]);
     void upload_pedido(void);
+    void tela_inicial(void);
+    void finalizar_pedido(void);
 
-    char conf_pgto;
+    float valor_recebido;
+    char conf_pedido;
 
-    do
+    system("clear || cls");
+    printf("\n>>>PAGAMENTO EM CHEQUE\n");
+    printf("\nValor TOTAL da compra: %.2f\n", p_pedido.Total);
+    printf("\nInsira o dinheiro (digite -1 para voltar): ");
+    scanf("%f", &valor_recebido);
+    limpa_buffer();
+
+    if (valor_recebido < 0)
     {
         system("clear || cls");
-        printf("\n===PAGAMENTO EM CHEQUE===\n");
-        printf("\nO cheque foi recebido? (0 - voltar / 1 - sim) ");
-        scanf("%c", &conf_pgto);
-        limpa_buffer();
-    } while (conf_pgto != '0' && conf_pgto != '1');
-
-    switch(conf_pgto)
+        valor_recebido = '\0';
+        printf("Voltando para FORMAS DE PAGAMENTO...\n");
+        printf("\nPressione qualquer tecla para voltar...");
+        getch();
+        system("clear || cls");
+        cobranca ();
+    }
+    else if (valor_recebido != p_pedido.Total)
     {
-        case '0':
-            system("clear || cls");
-            printf("\nVoltando para FORMAS DE PAGAMENTO...\n");
-            printf("\nPressione qualquer tecla para voltar...");
-            getch();
-            system("clear || cls");
-            conf_pgto = '\0';
-            cobranca();
-            break;
-        case '1':
-            system("clear || cls");
-            printf("\n===FINALIZACAO DE PEDIDO===\n");
-            printf("\nDigite o nome do CLIENTE: ");
-            get_string (p_pedido.NomeCliente);
-            p_pedido.FormaPgto = '2';
-            for (int i = 0; i < 16; ++i)
-                p_pedido.N_cartao[i] = '0';
-            p_pedido.N_cartao[16] = '\0';
-            printf("\n%s\n", p_pedido.N_cartao);
-            printf("\nPedido CONFIRMADO!\n");
-            printf("\nPagamento REALIZADO!\n");
-            conf_pgto = '\0';
-            upload_pedido();
-            printf("\nPressione qualquer tecla para montar um NOVO PEDIDO...");
-            getch();
-            system("clear || cls");
-            vendas();
-            break;
+        system("clear || cls");
+        printf("\nValor não correspondente.\n");
+        printf("\nPressione qualquer tecla para voltar...");
+        getch();
+        system("clear || cls");
+        pgto_cheque();
+    }
+    else
+    {
+
+        do
+        {
+            printf("\nConfirmar? (0 - voltar / 1 - sim) ");
+            scanf("%c", &conf_pedido);
+            limpa_buffer();
+        } while (conf_pedido != '0' && conf_pedido != '1');
+
+        switch(conf_pedido)
+        {
+            case '0':
+                system("clear || cls");
+                printf("\nVoltando pagamento em CHEQUE...\n");
+                printf("\nPressione qualquer tecla para voltar...");
+                getch();
+                system("clear || cls");
+                conf_pedido = '\0';
+                pgto_cheque();
+                break;
+            case '1':
+                system("clear || cls");
+                p_pedido.N_pedido = n_pedido_atual;
+                p_pedido.FormaPgto = '2';
+                for (int i = 0; i < 16; ++i)
+                    p_pedido.N_cartao[i] = '0';
+                p_pedido.N_cartao[16] = '\0';
+                finalizar_pedido();
+                break;
         }
+    }
 }
 
 void pgto_debito(void)
@@ -585,8 +866,6 @@ void limpa_buffer(void) // função criada para limpar o buffer do teclado.
 
 void upload_pedido(void)
 {
-    printf("\nupload_pedido\n");
-
     void limpar_pedido();
 
     FILE *pont_lancamentos;
@@ -644,10 +923,8 @@ void get_string (char linha[]) // função substitui 'gets'
     linha [i - 1] = '\0'; // limpa o ENTER
 }
 
-void novo_n_pedido()
+void novo_n_pedido(void)
 {
-    printf("\nnovo n de pedido puxado.\n");
-
     FILE *pont_Npedido;
 
     pont_Npedido = fopen("n_pedido.txt", "r");
@@ -670,5 +947,46 @@ void novo_n_pedido()
     fclose(pont_Npedido);
 
 }
+
+int busca_CodProd(int CodProd)
+{
+    int indice_CodProd = -1;
+    int i = 0;
+
+    while (indice_CodProd == -1 && menu[i].CodProd != '\0')
+    {
+        if(CodProd != menu[i].CodProd)
+            ++i;
+        else
+            indice_CodProd = i;
+    }
+
+    return indice_CodProd;
+}
+
+void calcula_total(void)
+{
+    p_pedido.Total = 0;
+
+    for (int i = 0; i < indice_l; ++i)
+        p_pedido.Total += l_pedido[i].SubTotal;
+}
+
+void finalizar_pedido(void)
+{
+    void tela_inicial(void);
+
+    printf("\n>>>FINALIZACAO DE PEDIDO\n");
+    printf("\nDigite seu NOME: ");
+    get_string (p_pedido.NomeCliente);
+    upload_pedido();
+    printf("\nPedido CONFIRMADO!\n");
+    printf("\nPagamento REALIZADO!\n");
+    printf("\nAGRADECEMOS a sua compra!");
+    getch();
+    system("clear || cls");
+    tela_inicial();
+}
+
 
 
