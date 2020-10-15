@@ -50,7 +50,6 @@ Os dados do tipo 'string' devem conter '_' em vez de ' '.
 //#include <conio.h> // WINDOWS - para utlizar 'getch'
 #include <termios.h> // LINUX - para utilizar 'getch'
 #include <unistd.h> // LINUX - para utilizar 'getch'
-//#include <locale.h> // WINDOWS - para utilizar 'setlocale'
 
 //--------------------------------------
 /**CONSTANTES DO PROGRAMA**/
@@ -133,8 +132,6 @@ int main (void)
     void novo_n_pedido(void);
     void tela_inicial(void);
 
-//    setlocale(LC_ALL,"PORTUGUESE"); // WINDOWS - para caracteres especiais
-
     download_menu(); // carrega na variável 'menu' a lista de produtos disponíveis
 
     novo_n_pedido(); // gera um novo nº de pedido
@@ -172,10 +169,10 @@ Apresentar as opções de manipulação de lançamentos do pedido e confirmaçã
 
         /*INTERAÇÃO COM O USUÁRIO*/
         // apresentará as opções do usuário na tela
-        printf("\nOpções:\n");
+        printf("\nOpcoes:\n");
         printf("(0) - Cancelar pedido\n");
-        printf("(1) - Registrar lançamentos\n");
-        printf("(2) - Remover lançamentos\n");
+        printf("(1) - Registrar lancamentos\n");
+        printf("(2) - Remover lancamentos\n");
         printf("(3) - Confirmar pedido\n");
 
         opcao = getch(); // guarda o caractere digitado pelo usuário
@@ -188,14 +185,14 @@ Apresentar as opções de manipulação de lançamentos do pedido e confirmaçã
                 break;
             case '1': // registrar lançamentos
                 system("clear || cls"); // limpa a tela para uma sensação de pop-up
-                printf("\nEntrando em REGISTRAR lançamentos...\n");
+                printf("\nEntrando em REGISTRAR lancamentos...\n");
                 printf("\nPressione qualquer tecla para continuar...");
                 getch(); // pausa para leitura da mensagem pelo usuário
                 reg_lancamento(); // direciona o usuário para a seção de registro de lançamentos no pedido
                 break;
             case '2': // remover lançamentos
                 system("clear || cls"); // limpa a tela para uma sensação de pop-up
-                printf("\nEntrando em REMOVER lançamentos...\n");
+                printf("\nEntrando em REMOVER lancamentos...\n");
                 printf("\nPressione qualquer tecla para continuar...");
                 getch(); // pausa para leitura da mensagem pelo usuário
                 rm_lancamento(); // direciona o usuário para a seção de remoção de lançamentos no pedido
@@ -212,7 +209,7 @@ Apresentar as opções de manipulação de lançamentos do pedido e confirmaçã
                 o último comando do programa.*/
             default: // caso o usuário digite uma opção diferente
                 system("clear || cls"); // limpa a tela para uma sensação de pop-up
-                printf("\nOpção inválida.\n");
+                printf("\nOpcao invalida.\n");
                 printf("\nPressione qualquer tecla para voltar...");
                 getch(); // pausa para leitura da mensagem pelo usuário
                 break;
@@ -241,7 +238,7 @@ Realizar o cancelamento do pedido montado*/
     if (indice_l == 0) // caso não haja lançamentos no pedido
     {
         system("clear || cls"); // limpa a tela para uma sensação de pop-up
-        printf("\nNão há lançamentos. Portanto, não é possível CANCELAR o pedido.\n");
+        printf("\nNao ha lancamentos. Portanto, nao e possivel CANCELAR o pedido.\n");
     }
     else // caso haja lançamentos no pedido
     {
@@ -253,7 +250,7 @@ Realizar o cancelamento do pedido montado*/
             // apresentará as opções do usuário na tela
             printf("\n>>>ATENCAO!!!\n");
             printf("\nTem certeza que deseja CANCELAR o pedido?\n");
-            printf("(0) - não\n");
+            printf("(0) - nao\n");
             printf("(1) - sim\n");
 
             conf_cancel = getch(); // guarda o caractere digitado pelo usuário
@@ -312,7 +309,7 @@ Realizar o registro de lançamentos no pedido*/
     mostrar_pedido(); // apresentar na tela todas as informações do pedido até o momento
 
     /*INTERAÇÃO COM O USUÁRIO*/
-    printf("\nInsira o código do produto desejado (-1 para voltar): ");
+    printf("\nInsira o codigo do produto desejado (-1 para voltar): ");
     scanf("%i", &l_pedido[indice_l].CodProd); // grava o valor digitado pelo usuário na variável CodProd
     limpa_buffer(); // limpa o ENTER digitado
 
@@ -333,8 +330,8 @@ Realizar o registro de lançamentos no pedido*/
         {
             limpar_lancamento(indice_l, true); // limpa qualquer dado registrado na linha do lançamento que estava sendo realizado
             system("clear || cls"); // limpa a tela para uma sensação de pop-up
-            printf("\nCódigo de produto digitado INVALIDO.\n");
-            printf("\nPor favor, digite um código válido.\n");
+            printf("\nCodigo de produto digitado INVALIDO.\n");
+            printf("\nPor favor, digite um codigo valido.\n");
             getch(); // pausa para leitura da mensagem pelo usuário
             reg_lancamento(); // retorna ao início do registro de lançamento
         }
@@ -367,8 +364,8 @@ Realizar o registro de lançamentos no pedido*/
             {
                 limpar_lancamento(indice_l, true); // limpa qualquer dado registrado na linha do lançamento que estava sendo realizado
                 system("clear || cls"); // limpa a tela para uma sensação de pop-up
-                printf("\nLimite mínimo por lançamento  = %i.", min_Qtd);
-                printf("\nLimite máximo por lançamento  = %i.\n", max_Qtd);
+                printf("\nLimite minimo por lancamento  = %i.", min_Qtd);
+                printf("\nLimite maximo por lancamento  = %i.\n", max_Qtd);
                 printf("\nPressione qualquer tecla para voltar...");
                 getch(); // pausa para leitura da mensagem pelo usuário
                 reg_lancamento(); // retorna ao início do registro de lançamento
@@ -384,8 +381,8 @@ Realizar o registro de lançamentos no pedido*/
 
                     /*INTERAÇÃO COM O USUÁRIO*/
                     // apresentará as opções do usuário na tela
-                    printf("\nConfirmar lançamento?\n");
-                    printf("0 - não\n");
+                    printf("\nConfirmar lancamento?\n");
+                    printf("0 - nao\n");
                     printf("1 - sim\n");
 
                     conf_lancamento = getch(); // guarda o caractere digitado pelo usuário
@@ -407,7 +404,7 @@ Realizar o registro de lançamentos no pedido*/
                         ++indice_l; // vai para o próximo índice de um lançamento novo
                         calcula_total(); // calcula o novo Total do pedido
                         system("clear || cls"); // limpa a tela para uma sensação de pop-up
-                        printf("\nLançamento REGISTRADO!\n");
+                        printf("\nLancamento REGISTRADO!\n");
                         printf("\nPressione qualquer tecla para continuar...");
                         getch(); // pausa para leitura da mensagem pelo usuário
                         reg_lancamento(); // retorna ao início do registro de lançamento
@@ -421,7 +418,7 @@ Realizar o registro de lançamentos no pedido*/
 void rm_lancamento (void) // em construcao
 /*Objetivo da função*/
 {
-    printf("\nVocê escolheu REMOVER lançamento.\n");
+    printf("\nVoce escolheu REMOVER lançamento.\n");
     /*
     Este seria o sub-módulo 'rm_lancamento' que tem no mapa lógico.
     Creio que deva ser montado com base nele.
@@ -439,7 +436,7 @@ void confirmar_pedido (void) // revisar
 
     if(indice_l == 0)
     {
-        printf("\nNão há itens lançados no pedido.\n");
+        printf("\nNao ha itens lancados no pedido.\n");
         printf("\nPressione qualquer tecla para voltar...");
         getch();
         system("clear || cls");
@@ -477,12 +474,12 @@ void cobranca (void) // revisar
 
         mostrar_pedido();
 
-        printf("\nOpções:\n");
-        printf("(0) - Lançar itens/Cancelar pedido\n");
+        printf("\nOpcoes:\n");
+        printf("(0) - Lancar itens/Cancelar pedido\n");
         printf("(1) - Dinheiro\n");
         printf("(2) - Cheque\n");
-        printf("(3) - Cartão de Débito\n");
-        printf("(4) - Cartão de Crédito\n");
+        printf("(3) - Cartao de Debito\n");
+        printf("(4) - Cartao de Credito\n");
 
         opcao = getch();
 
@@ -530,7 +527,7 @@ void cobranca (void) // revisar
                 break;
             default:
                 system("clear || cls");
-                printf("\nOpção inválida.\n");
+                printf("\nOpcao invalida.\n");
                 printf("\nPressione qualquer tecla para voltar...");
                 getch();
                 system("clear || cls");
@@ -657,7 +654,7 @@ void pgto_cheque (void) // revisar
     else if (valor_recebido != p_pedido.Total)
     {
         system("clear || cls");
-        printf("\nValor não correspondente.\n");
+        printf("\nValor nao correspondente.\n");
         printf("\nPressione qualquer tecla para voltar...");
         getch();
         system("clear || cls");
@@ -831,8 +828,8 @@ Imprimir na tela as informações até o momento do pedido*/
 
     if(indice_l == 0) // se 'indice_l' for igual a zero quer dizer que ainda não houveram lançamentos no pedido
     {
-        printf("\nPedido Nº %i", n_pedido_atual); // informações apresentadas caso não haja lançamentos no pedido
-        printf("\nNão há lançamentos no pedido.\n");
+        printf("\nPedido No %i", n_pedido_atual); // informações apresentadas caso não haja lançamentos no pedido
+        printf("\nNao ha lancamentos no pedido.\n");
     }
     else // apresentação das informações do pedido caso haja lançamentos
     {
@@ -853,7 +850,7 @@ Imprimir na tela as informações até o momento do pedido*/
 
 void imprime_n_pedido (void)
 {
-    printf("\n                              Pedido Nº ");
+    printf("\n                              Pedido No ");
     // dependendo do valor de 'n_pedido_atual' é necessário uma quantidade de espaços para alinhar ao quadro
     if (n_pedido_atual < 10)
         printf("     %i\n", n_pedido_atual);
@@ -946,11 +943,11 @@ void mostrar_menu (void)
 Imprimir na tela os produtos disponíveis no 'menu'*/
 {
     if (menu[0].CodProd == '\0') // se o primeiro CodProd for '\0' (vazio), então não há itens no 'menu'
-        printf("\nNão há itens no menu.\n");
+        printf("\nNao ha itens no menu.\n");
     else // apresentação das informações do 'menu' caso haja produtos disponíveis
     {
         printf("\n============MENU============="); // título da quadro
-        printf("\nCódigo Nome do Produto  Custo\n"); // cabeçalho da tabela
+        printf("\nCodigo Nome do Produto  Custo\n"); // cabeçalho da tabela
         for (int i = 0; menu[i].CodProd != '\0'; ++i) // ciclo que fará a impressão dos produtos disponíveis
         {
             // CodProd
@@ -1008,7 +1005,7 @@ Carregar do arquivo "menu_produtos.DAT" quais são os produtos disponíveis e gu
     pont_menu = fopen(menu_dat, "r"); // leitura do arquivo onde se encontram os produtos disponíveis
 
     if (pont_menu == NULL)
-        printf("\nArquivo não pode ser aberto\n"); // caso ocorra problemas na leitura do arquivo
+        printf("\nArquivo nao pode ser aberto\n"); // caso ocorra problemas na leitura do arquivo
     else
     {
         int i = 0; // índice da variável vetor 'menu'
@@ -1036,7 +1033,7 @@ void novo_n_pedido (void)
     pont_Npedido = fopen(N_pedido_dat, "r"); // leitura do arquivo onde se encontra o último nº de pedido aberto
 
     if (pont_Npedido == NULL)
-        printf("\nArquivo não pode ser aberto\n"); // caso ocorra problemas na leitura do arquivo
+        printf("\nArquivo nao pode ser aberto\n"); // caso ocorra problemas na leitura do arquivo
     else
     {
         fscanf(pont_Npedido, "%i", &n_pedido_atual); // grava o nº do último pedido aberto em 'n_pedido_atual'
@@ -1069,7 +1066,7 @@ Gravar nos arquivos "lancamentos_pedidos.DAT" e "pagamentos_pedidos.DAT os dados
     pont_lancamentos = fopen(lancamentos_dat, "a"); // abre para anexar lançamentos confirmado do pedido realizado
 
     if (pont_lancamentos == NULL)
-        printf("\nArquivo não pode ser aberto\n"); // caso ocorra problemas na leitura do arquivo
+        printf("\nArquivo nao pode ser aberto\n"); // caso ocorra problemas na leitura do arquivo
     else
     {
         for (int i = 0; i < indice_l; i++) // passar por todos os lançamentos do pedido
