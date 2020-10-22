@@ -46,10 +46,10 @@ Os dados do tipo 'string' devem conter '_' em vez de ' '.
 //--------------------------------------
 
 #include <stdio.h>
-#include <stdlib.h> // para utilizar 'system'
+#include <stdlib.h>
 //#include <conio.h> // WINDOWS - para utlizar 'getch'
-#include <termios.h> // LINUX - para utilizar 'getch'
-#include <unistd.h> // LINUX - para utilizar 'getch'
+#include <termios.h> // LINUX - para utilizar 'getch' criado
+#include <unistd.h> // LINUX - para utilizar 'getch' criado
 #include <string.h>
 
 //--------------------------------------
@@ -94,6 +94,7 @@ struct Lancamento // estrutura para formar os lançamentos de um pedido
     float CustoProd; // custo do produto (de 0.01 a 100.00)
     int   Qtd;       // quantidade do produto (de 1 a 100)
     float SubTotal;  // CustoProd * Qtd (de 0.01 a 10,000.00)
+    bool  Preparado; // true = preparado / false = a ser preparado
 };
 
 struct Pagamento // estrutura para formar o pagamento de um pedido
@@ -103,7 +104,9 @@ struct Pagamento // estrutura para formar o pagamento de um pedido
     char  FormaPgto; // forma de pagamento ('1'=dinheiro '2'=cheque '3'=débito '4'=crédito)
     char  NCartao[tNCartao];         // nº do cartão (máx caracteres: 16 / 17 = '\0') para dinheiro e cheque '000...' não pode haver espaços
     char  NomeCliente[tNomeCliente]; // nome do cliente para identificação na entrega (máx caracteres: 20 / 21 = '\0') não pode haver espaços
+    bool  Entregue; // true = entregue / false = não entregue
 };
+
 
 //--------------------------------------
 /**FORMAÇÃO DAS VARIÁVEIS GLOBAIS**/
@@ -124,6 +127,9 @@ int    NPedidoAtual; // variável que guardará o nº do pedido que está sendo 
 //--------------------------------------
 
 int main (void)
+/*Objetivo da função
+Irá fazer o download do menu, iniciará um novo pedido e abrirá a tela inicial
+dos pedidos*/
 {
     // funções utilizadas
     void DownloadMenu(void);
@@ -333,6 +339,7 @@ Realizar o registro de lançamentos no pedido*/
             else // caso o CodProd digitado tenha sido encontrado no 'menu'
             {
                 LancaPedido[IndiceLancamento].NPedido = NPedidoAtual; // guarda o nº do pedido na linha do lançamento
+                LancaPedido[IndiceLancamento].Preparado = false; // informa que lançamento nao está preparado
 
                 for (int i = 0; i < tNomeProd; ++i) // passa por todos os caracteres do NomeProd
                     LancaPedido[IndiceLancamento].NomeProd[i] = Menu[IndiceCodProd].NomeProd[i]; // guarda cada caractere do NomeProd do item escolhido para o NomeProd do lançamento
@@ -406,18 +413,137 @@ Realizar o registro de lançamentos no pedido*/
 
 void RmLancamento (void) // em construcao
 /*Objetivo da função
-*/
+Remover um lançamento registrado no pedido*/
 {
-    printf("\nVoce escolheu REMOVER lançamento.\n");
-    /*
-    Este seria o sub-módulo 'rm_lancamento' que tem no mapa lógico.
-    Creio que deva ser montado com base nele.
-    */
+    // funções utilizadas
+    int  getch(void);
+    void MostrarPedido(void);
+    void limpabuffer(void);
+    void LimparLancaPedido(void);
+    void LimparPgtoPedido(void);
+    void MostrarLancamento(int IndiceRef);
+    void LimparLancamento(int IndiceLancamentoRef, bool Subir);
+
+    // variáveis locais
+    int  IndiceRm;
+    bool Voltar;
+    char ConfCancel, ConfRm;
+
+    if (IndiceLancamento == 0) // caso não haja lançamentos no pedido
+    {
+        system("clear || cls"); // limpa a tela para uma sensação de pop-up
+        printf("\nNao ha lancamentos. Portanto, nao e possivel REMOVER lancamentos.\n");
+        getch(); // pausa para leitura da mensagem pelo usuário
+    }
+    else // caso haja lançamentos no pedido
+    {
+        do
+        {
+            Voltar = false;
+
+            system("clear || cls"); // limpa a tela para sensação de uma nova página
+
+            printf("\n>>>REMOCAO DE LANCAMENTOS\n"); // título da página
+
+            MostrarPedido(); // apresentar na tela todas as informações do pedido até o momento
+
+            /*INTERAÇÃO COM O USUÁRIO*/
+            printf("\nInsira o numero da linha (i) que deseja remover\n");
+            printf("(-1 para voltar/ 0 para remover tudo): ");
+            scanf("%i", &IndiceRm); // grava o valor digitado pelo usuário na variável CodProd
+            limpabuffer(); // limpa o ENTER digitado
+
+            if (IndiceRm < 0)
+            {
+                IndiceRm = '\0';
+                system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                printf("\nVoltando para a TELA INICIAL...\n");
+                printf("\nPressione qualquer tecla para voltar...");
+                Voltar = true; // fará com que o ciclo da função termine e o usuário retorne a tela principal
+                getch(); // pausa para leitura da mensagem pelo usuário
+
+            }
+            else if (IndiceRm == 0)
+            {
+                IndiceRm = '\0';
+
+                do
+                {
+                    system("clear || cls"); // limpa a tela para uma sensação de pop-up
+
+                    /*INTERAÇÃO COM O USUÁRIO*/
+                    // apresentará as opções do usuário na tela
+                    printf("\n>>>ATENCAO!!!\n");
+                    printf("\nTem certeza que deseja REMOVER TODOS os lancamentos?\n");
+                    printf("(0) - nao\n");
+                    printf("(1) - sim\n");
+
+                    ConfCancel = getch(); // guarda o caractere digitado pelo usuário
+                } while (ConfCancel != '0' && ConfCancel != '1');
+                // enquanto o usuário não digitar uma opção válida ele ficará realizando o ciclo da aprensentação do pop-up de confirmação do cancelamento do pedido
+
+                if(ConfCancel == '0') // não cancelar pedido
+                {
+                    system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                    printf("\nRemocao de lancamentos CANCELADO.\n");
+                    getch(); // pausa para leitura da mensagem pelo usuário
+                }
+                else // cancelar pedido
+                {
+                    LimparLancaPedido();
+                    LimparPgtoPedido();
+                    Voltar = true;
+                    system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                    printf("\nRemocao de lancamentos REALIZADO.\n");
+                    getch(); // pausa para leitura da mensagem pelo usuário
+                }
+            }
+            else if (IndiceRm - 1 >= IndiceLancamento)
+            {
+                IndiceRm = '\0';
+                system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                printf("\nNão ha lancamento no INDICE digitado.\n");
+                printf("\nPressione qualquer tecla para voltar...");
+                getch(); // pausa para leitura da mensagem pelo usuário
+            }
+            else
+            {
+                do
+                {
+                    system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                    printf("\nO seguinte lancamento sera REMOVIDO.\n");
+                    MostrarLancamento(IndiceRm - 1);
+                    printf("\nConfirmar REMOCAO (0 - nao / 1 - sim):\n");
+                    ConfRm = getch();
+                } while (ConfRm != '0' && ConfRm != '1');
+
+                if (ConfRm == '0')
+                {
+                    system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                    printf("\nLancamento NAO removido.\n");
+                    printf("\nPressione qualquer tecla para voltar...");
+                    getch(); // pausa para leitura da mensagem pelo usuário
+                }
+                else
+                {
+                    LimparLancamento(IndiceRm - 1, true);
+                    system("clear || cls"); // limpa a tela para uma sensação de pop-up
+                    printf("\nLancamento REMOVIDO.\n");
+                    printf("\nPressione qualquer tecla para voltar...");
+                    getch(); // pausa para leitura da mensagem pelo usuário
+                }
+                IndiceRm = '\0';
+
+            }
+
+        } while (! Voltar);
+    }
 }
 
 void ConfirmarPedido (void) // revisar
 /*Objetivo da função
-*/
+Verifica se há lancamentos, e em caso positivo, leva o usuário para
+o módulo Cobranca*/
 {
     int getch(void); // LINUX
     void Cobranca(void);
@@ -599,6 +725,7 @@ bool PgtoDinheiro (void) // revisar
             {
                 PgtoPedido.NPedido = NPedidoAtual;
                 PgtoPedido.FormaPgto = '1';
+                PgtoPedido.Entregue = false;
                 strcpy(PgtoPedido.NCartao, "0000000000000000");
                 FinalizarPedido();
                 Pgto = true;
@@ -676,6 +803,7 @@ bool PgtoCheque (void) // revisar
             {
                 PgtoPedido.NPedido = NPedidoAtual;
                 PgtoPedido.FormaPgto = '2';
+                PgtoPedido.Entregue = false;
                 strcpy(PgtoPedido.NCartao, "0000000000000000");
                 FinalizarPedido();
                 Pgto = true;
@@ -830,7 +958,7 @@ Imprimir na tela as informações até o momento do pedido*/
     }
     else // apresentação das informações do pedido caso haja lançamentos
     {
-        printf("\n==================SEU PEDIDO=================="); // título do quadro
+        printf("\n====================SEU PEDIDO===================="); // título do quadro
 
         ImprimeNPedido(); // imprime o nº do pedido
 
@@ -841,13 +969,13 @@ Imprimir na tela as informações até o momento do pedido*/
 
         ImprimeRodapePedido(); // imprime o total do pedido
 
-        printf("==============================================\n"); // rodapé do quadro
+        printf("==================================================\n"); // rodapé do quadro
     }
 }
 
 void ImprimeNPedido (void)
 {
-    printf("\n                              Pedido No ");
+    printf("\n                                  Pedido No ");
     // dependendo do valor de 'n_pedido_atual' é necessário uma quantidade de espaços para alinhar ao quadro
     if (NPedidoAtual < 10)
         printf("     %i\n", NPedidoAtual);
@@ -865,12 +993,20 @@ void ImprimeNPedido (void)
 
 void ImprimeCabecalhoPedido (void)
 {
-    printf("\nCodProd Nome do Produto   Custo  Qtd  SubTotal\n"); // cabeçalho da tabela
+    printf("\ni   CodProd Nome do Produto   Custo  Qtd  SubTotal\n"); // cabeçalho da tabela
 }
 
 void ImprimeLancamento (int IndiceRef)
 {
     int i = IndiceRef; // cria uma variável que guardará o índica do lançamento que se deseja imprimir
+
+    //Índice
+    if (IndiceRef + 1 < 10)
+        printf("%i   ", IndiceRef + 1);
+    else if (IndiceRef + 1 < 100)
+        printf("%i  ", IndiceRef + 1);
+    else
+        printf("%i ", IndiceRef + 1);
 
     // CodProd
     printf("%i      ",   LancaPedido[i].CodProd); // imprime CodProd (como tem sempre dois caracteres não é necessário quantidade de espações diferentes
@@ -919,7 +1055,7 @@ void ImprimeLancamento (int IndiceRef)
 
 void ImprimeRodapePedido (void)
 {
-    printf("\n                               Total ");
+    printf("\n                                   Total ");
     // dependendo do valor de Total é necessário uma quantidade de espaços para alinhar ao quadro
     if (PgtoPedido.Total < 10)
         printf("     %.2f\n", PgtoPedido.Total);
@@ -1128,20 +1264,44 @@ Calcular o Total de 'p_pedido' até o momento*/
 
 void FinalizarPedido (void) // revisar falta completar
 {
+    // funções utilizadas
     void getstring(char linha[]);
     void UploadPedido(void);
     int  getch (void);
 
-    system("clear ||cls");
-    printf("\n>>>FINALIZACAO DE PEDIDO\n");
-    printf("\nDigite seu NOME: ");
-    getstring (PgtoPedido.NomeCliente);
-    UploadPedido();
-    system("clear ||cls");
-    printf("\nPedido CONFIRMADO!\n");
-    printf("\nPagamento REALIZADO!\n");
-    printf("\nAGRADECEMOS a sua compra!");
-    getch();
+    //variáveis locais
+    bool Terminar
+
+    do
+    {
+        Terminar = false;
+
+        system("clear ||cls");
+
+        printf("\n>>>FINALIZACAO DE PEDIDO\n");
+
+        /*INTERAÇÃO COM O USUÁRIO*/
+        printf("\nDigite seu NOME: ");
+        getstring (PgtoPedido.NomeCliente);
+
+        if (strlen(PgtoPedido.NomeCliente) < 3)
+        {
+            system("clear ||cls"); // limpa a tela para sensação de pop-up
+            printf("\nDigite um nome com pelo menos 3 caracteres.\n");
+            printf("\nPressione qualquer tecla para voltar...");
+            getch(); // pausa para leitura da mensagem pelo usuário
+        }
+        else
+        {
+            UploadPedido(); // limpa a tela para sensação de pop-up
+            system("clear ||cls");
+            printf("\nPedido CONFIRMADO!\n");
+            printf("\nPagamento REALIZADO!\n");
+            printf("\nAGRADECEMOS a sua compra!");
+            Terminar = true; // termina o ciclo
+            getch(); // pausa para leitura da mensagem pelo usuário
+        }
+    } while (! Terminar);
 }
 
 
