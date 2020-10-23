@@ -641,6 +641,8 @@ void mostrar_menu (void)
 /*Objetivo da função
 Imprimir na tela o menu atual*/
 {
+	int cont,cont2,aux;
+	char nome_produto[15];
     if (qtd_produtos == 0) // se o primeiro cod_prod for '\0' (vazio), então não há itens no 'menu'
         printf("\nNao ha itens no menu.\n");
     else // apresentação das informações do 'menu' caso haja produtos disponíveis
@@ -650,8 +652,26 @@ Imprimir na tela o menu atual*/
         for (int i = 0; menu[i].cod_prod != '\0'; ++i) // ciclo que fará a impressão dos produtos disponíveis
         {
             // cod_prod
-            printf("%i     ", menu[i].cod_prod); // imprime cod_prod (como tem sempre dois caracteres não é necessário quantidade de espaços diferentes
+            printf("[%i]    ", menu[i].cod_prod); // imprime cod_prod (como tem sempre dois caracteres não é necessário quantidade de espaços diferentes
+			
+			//ENUMERA��O DE VETORES
+			for(cont = 0; menu[cont].cod_prod != '\0'; cont++){
+				for(cont2 = cont+1;menu[cont2].cod_prod != '\0';cont2++){
+					if(menu[cont].cod_prod>menu[cont2].cod_prod){
+						strcpy(nome_produto,menu[cont].nome_prod);//COPIA DE STRING
+						aux = menu[cont].cod_prod;// ARMAZENA O MAIOR VALOR
+						
+						
+						menu[cont].cod_prod = menu[cont2].cod_prod;// TROCA AS POSI��ES. O MAIOR RECEBE O VALOR DO MENOR
+						strcpy(menu[cont].nome_prod, menu[cont2].nome_prod);//COPIA DE STRING
+						
+						menu[cont2].cod_prod = aux;//ATRIBUI O MAIOR VALOR A POSI��O CORRETA
 
+						strcpy(menu[cont2].nome_prod,nome_produto);//COPIA DE STRING
+						
+					}
+				}
+			}
             // nome_prod
             for (int ii = 0; ii < t_nome_prod; ++ii) // ciclo que passa por todos os caracteres de nome_prod
             {
@@ -678,6 +698,7 @@ Imprimir na tela o menu atual*/
             else
                 printf("        %i\n", menu[i].tempo_prod);
         }
+
         printf("========================================\n"); // rodapé do quadro
     }
 }
