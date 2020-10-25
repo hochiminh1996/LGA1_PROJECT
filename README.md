@@ -20,12 +20,13 @@ Leandro Paiva Higa
 #### Módulo cobranca
 - [x] PgtoDinheiro;
 - [x] PgtoCheque;
-- [ ] PgtoDebito;
-- [ ] PgtoCredito;
+- [x] PgtoDebito;
+- [x] PgtoCredito;
 #### Modulo fila de espera
+- [x] Pedidos na frente;
 - [ ] PrevisaoEspera;
 - [x] FinalizarPedido;
-#### Modulo cozinha
-- [ ] RegPreparo;
 #### Modulo entrega
+- [x] RegEntrega;
+#### Modulo cliente
 - [ ] ConsultarPedido;
