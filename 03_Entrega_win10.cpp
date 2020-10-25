@@ -22,9 +22,9 @@ Ultima atualizacao: 25-out.-2020 as 10h18
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h> //Linux (criacao de getch)
-#include <unistd.h> //Linux (criacao de getch)
-//#include <conio.h> //Windows (getch)
+//#include <termios.h> //Linux (criacao de getch)
+//#include <unistd.h> //Linux (criacao de getch)
+#include <conio.h> //Windows (getch)
 #include <string.h>
 
 //--------------------------------------
