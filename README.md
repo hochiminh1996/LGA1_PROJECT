@@ -1,4 +1,4 @@
-# Projeto Mickey & Donald 
+# Projeto Mickey & Donald
 ![drive](https://github.com/hochiminh1996/LGA1_PROJECT/blob/master/drive.jpg)
 
 ## Descrição
@@ -15,7 +15,7 @@ Leandro Paiva Higa
 #### Modulo vendas
 - [x] CancelarPedido;
 - [x] RegLancamento;
-- [ ] RmLancamento;
+- [x] RmLancamento;
 - [x] ConfirmarPedido;
 #### Módulo cobranca
 - [x] PgtoDinheiro;
