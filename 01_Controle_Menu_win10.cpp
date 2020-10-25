@@ -2,18 +2,18 @@
 /**INFORMACOES BASICAS**/
 //--------------------------------------
 /*
-Nome do projeto: Controle de cardapio
+Nome do projeto: Controle de Menu Mickey & Donald
 
 Descricao:
-Programa que ira consultar, adicionar e remover os produtos de um cardapio
-que esta armazenado num arquivo .DAT. Desenvolvido dentro de um sistema
-oprecional linux.
+Projeto para avaliacao de desempenho na discipĺina de "Logica de programacao 1"
+do curso "Tecnologo de Analise e Desenvolvimento de Sistemas" no Instituto Federal
+de Sao Paulo - campus Sao Paulo
 
 Desenvolvedor(es):
-Leandro Paiva Higa  github: leandrophiga
-Felippe Marques da Silva de Almeida
+Felippe Marques da Silva de Almeida SP3056686
+Leandro Paiva Higa                  SP3052648
 
-Ultima atualizacao: 23-out.-2020 as 12h23
+Ultima atualizacao: 23-out.-2020 as 20h03
 */
 //--------------------------------------
 /**BIBLIOTECAS UTILIZADAS**/
@@ -21,9 +21,9 @@ Ultima atualizacao: 23-out.-2020 as 12h23
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h> //Linux (criacao de getch)
-#include <unistd.h> //Linux (criacao de getch)
-//#include <conio.h> //Windows (getch)
+//#include <termios.h> //Linux (criacao de getch)
+//#include <unistd.h> //Linux (criacao de getch)
+#include <conio.h> //Windows (getch)
 #include <string.h>
 
 //--------------------------------------
@@ -36,8 +36,6 @@ const int   min_cod_prod   = 10;           //valor minimo de 'cod_prod'
 const int   max_cod_prod   = 99;           //valor maximo de 'cod_prod'
 const float min_custo_prod = 0.01;         //valor minimo de 'custo_prod'
 const float max_custo_prod = 100.00;       //valor maximo de 'custo_prod'
-const int   min_tempo_prod = 1;            //valor minimo de 'tempo_prod' em minutos
-const int   max_tempo_prod = 60;           //valor maximo de 'tempo_prod' em minutos
 const char  menu_dat[]     = {"MENU.DAT"}; //nome do arquivo que se encontra os dados do 'menu'
 
 //--------------------------------------
@@ -49,7 +47,7 @@ struct produto //estrutura para formar a lista de produtos disponiveis no 'menu'
     int   cod_prod;               //codigo do produto
     char  nome_prod[t_nome_prod]; //nome do produto (max caracteres: 14 | 15 = '\0')
     float custo_prod;             //custo do produto
-    int   tempo_prod;             //tempo de preparo do produto
+    char  tipo_prod;              //tipo de produto (1 - hamburguer | 2 - acompanhamento | 3 - bebida | 4 - outros)
 };
 
 //--------------------------------------
@@ -90,7 +88,7 @@ void controle_menu (void)
 Inicia a tela inicial, apresenta e encaminha o usuario para as funcionalidades desejadas.*/
 {
     //funcoes utilizadas
-    int getch(void);
+    //int getch(void);
     void ver_menu(void);
     void inserir_produto(void);
     void remover_produto(void);
@@ -162,7 +160,7 @@ void ver_menu (void)
 Permite o usuario visualizar todos os produtos do 'menu' até o momento.*/
 {
     //funcoes utilizadas
-    int getch(void);
+    //int getch(void);
     void mostrar_menu(void);
 
     system("clear || cls"); //limpa a tela para sensacao de pop-up
@@ -181,13 +179,13 @@ Permite o usuario registrar um 'novo_produto' ao 'menu'.*/
     void mostrar_menu(void);
     void limpar_buffer(void);
     void limpar_novo_produto(void);
-    int  getch(void);
+    //int  getch(void);
     bool validar_cod_prod(int cod_prod);
     void get_string(char linha[]);
     bool validar_nome_prod(char nome_prod[]);
     void formatar_string(char linha[]);
     bool validar_custo_prod(float custo_prod);
-    bool validar_tempo_prod(int tempo_prod);
+    bool validar_tipo_prod(int tipo_prod);
     void registrar_produto(void);
     void export_menu(void);
 
@@ -293,12 +291,12 @@ Permite o usuario registrar um 'novo_produto' ao 'menu'.*/
                     else
                     {
                         /*INTERACAO COM O USUARIO*/
-                        //inserindo 'tempo_prod' do 'novo_produto'
-                        printf("\nDigite o tempo de preparo do novo produto em minutos [0 para voltar]: ");
-                        scanf("%i", &novo_produto.tempo_prod);
+                        //inserindo 'tipo_prod' do 'novo_produto'
+                        printf("\nDigite o tipo de produto do novo produto [0 para voltar]: ");
+                        scanf("%c", &novo_produto.tipo_prod);
                         limpar_buffer(); //limpa o ENTER deixado pelo 'scanf'
 
-                        if (novo_produto.tempo_prod == 0) //se o usuario escolher por retornar a tela inicial
+                        if (novo_produto.tipo_prod == '0') //se o usuario escolher por retornar a tela inicial
                         {
                             limpar_novo_produto(); //limpa o que ele tiver registrado ate o momento
                             system("clear || cls"); //limpa a tela para sensacao de pop-up
@@ -307,14 +305,12 @@ Permite o usuario registrar um 'novo_produto' ao 'menu'.*/
                             voltar = true; //fara com que termine a execucao do submodulo e volte a tela inicial
                             getch(); //pausa a tela para leitura do usuario
                         }
-                        /*Verificacao de validade do 'tempo_prod' digitado*/
-                        else if (! validar_tempo_prod(novo_produto.tempo_prod)) //se o 'tempo_prod' digitado nao for valido
+                        /*Verificacao de validade do 'tipo_prod' digitado*/
+                        else if (! validar_tipo_prod(novo_produto.tipo_prod)) //se o 'tipo_prod' digitado nao for valido
                         {
                             limpar_novo_produto(); //limpa o que ele tiver registrado ate o momento
                             system("clear || cls"); //limpa a tela para sensacao de pop-up
-                            printf("\nValor de TEMPO invalido.\n");
-                            printf("\nValor minimo: %i\n", min_tempo_prod);
-                            printf(  "Valor maximo: %i\n", max_tempo_prod);
+                            printf("\nTIPO de produto invalido.\n");
                             printf("\nPressione qualquer tecla para voltar...");
                             getch(); //pausa a tela para leitura do usuario
                         }
@@ -364,7 +360,7 @@ Permite o usuario remover um produto existente no 'menu'.*/
     //funcoes utilizadas
     void mostrar_menu(void);
     void limpar_buffer(void);
-    int  getch(void);
+    //int  getch(void);
     int  buscar_cod_prod(int cod_prod);
     void mostrar_produto(int cod_prod);
     void limpar_produto(int cod_prod);
@@ -454,7 +450,7 @@ void import_menu (void)
 Importa os produtos do arquivo para o 'menu'.*/
 {
     //funcoes utilizadas
-    int getch(void);
+    //int getch(void);
 
     //variaveis locais
     FILE *pont_menu;
@@ -492,7 +488,7 @@ void export_menu (void)
 Exporta os produtos do arquivo para o 'menu'.*/
 {
     //funcoes utilizadas
-    int getch(void);
+    //int getch(void);
 
     //variaveis locais
     FILE *pont_menu;
@@ -533,10 +529,10 @@ void limpar_novo_produto (void)
 Limpa qualquer registro realizado em 'novo_produto'.*/
 {
     novo_produto.cod_prod = '\0'; //preenche '\0' (vazio) em 'cod_prod'
-    for (int i = 0; i <= t_nome_prod; ++i) //passa por todos os caracteres de 'nome_prod'
+    for (int i = 0; i < t_nome_prod; ++i) //passa por todos os caracteres de 'nome_prod'
         novo_produto.nome_prod[i] = '\0'; //preenche '\0' (vazio) em todos os caracteres de 'nome_prod'
     novo_produto.custo_prod = '\0'; //preenche '\0' (vazio) em 'custo_prod'
-    novo_produto.tempo_prod = '\0'; //preenche '\0' (vazio) em 'tempo_prod'
+    novo_produto.tipo_prod = '\0'; //preenche '\0' (vazio) em 'tipo_prod'
 }
 
 void registrar_produto (void)
@@ -547,10 +543,10 @@ Guarda os valores inseridos pelo usuario em 'novo_produto' no 'menu'.*/
     void ordernar_produtos(void);
 
     menu[qtd_produtos].cod_prod = novo_produto.cod_prod; //guarda o 'cod_prod' no 'menu'
-    for (int i = 0; i <= t_nome_prod; ++i) //passa por todos os caracteres de 'nome_prod'
+    for (int i = 0; i < t_nome_prod; ++i) //passa por todos os caracteres de 'nome_prod'
         menu[qtd_produtos].nome_prod[i] = novo_produto.nome_prod[i]; //guarda todos os caracteres de 'nome_prod' no 'menu'
     menu[qtd_produtos].custo_prod = novo_produto.custo_prod; //guarda o 'custo_prod' no 'menu'
-    menu[qtd_produtos].tempo_prod = novo_produto.tempo_prod; //guarda o 'tempo_prod' no 'menu'
+    menu[qtd_produtos].tipo_prod = novo_produto.tipo_prod; //guarda o 'tipo_prod' no 'menu'
 
     ++qtd_produtos; //passa para o proximo indice em que podera ser registrado um 'novo_produto'
 
@@ -572,24 +568,24 @@ Ordena os produtos do 'menu' de acordo com o  'cod_prod'.*/
             {
                 //guarda o produto com 'cod_prod' maior no variavel 'auxiliar'
                 auxiliar.cod_prod = menu[i].cod_prod;
-                for (int iii = 0; iii <= t_nome_prod; ++iii)
+                for (int iii = 0; iii < t_nome_prod; ++iii)
                     auxiliar.nome_prod[iii] = menu[i].nome_prod[iii];
                 auxiliar.custo_prod = menu[i].custo_prod;
-                auxiliar.tempo_prod = menu[i].tempo_prod;
+                auxiliar.tipo_prod = menu[i].tipo_prod;
 
                 //substitui o produto com 'cod_prod' menor no lugar do maior
                 menu[i].cod_prod = menu[ii].cod_prod;
-                for (int iii = 0; iii <= t_nome_prod; ++iii)
+                for (int iii = 0; iii < t_nome_prod; ++iii)
                     menu[i].nome_prod[iii] = menu[ii].nome_prod[iii];
                 menu[i].custo_prod = menu[ii].custo_prod;
-                menu[i].tempo_prod = menu[ii].tempo_prod;
+                menu[i].tipo_prod = menu[ii].tipo_prod;
 
                 //recoloca o produto que esta no 'auxiliar' no lugar antigo do prduto com 'cod_prod' menor
                 menu[ii].cod_prod = auxiliar.cod_prod;
-                for (int iii = 0; iii <= t_nome_prod; ++iii)
+                for (int iii = 0; iii < t_nome_prod; ++iii)
                     menu[ii].nome_prod[iii] = auxiliar.nome_prod[iii];
                 menu[ii].custo_prod = auxiliar.custo_prod;
-                menu[ii].tempo_prod = auxiliar.tempo_prod;
+                menu[ii].tipo_prod = auxiliar.tipo_prod;
             }
         }
     }
@@ -601,7 +597,7 @@ Remove o produto indicado pelo 'cod_prod' referido.*/
 {
     //funcoes utilizadas
     int buscar_cod_prod(int cod_prod);
-    int getch(void);
+    //int getch(void);
 
     //variaveis locais
     int i;
@@ -618,18 +614,18 @@ Remove o produto indicado pelo 'cod_prod' referido.*/
     else
     {
         menu[i].cod_prod = '\0'; //preenche '\0' (vazio) em 'cod_prod'
-        for (int ii = 0; ii <= t_nome_prod; ++ii) //passa por todos os caracteres de 'nome_prod'
+        for (int ii = 0; ii < t_nome_prod; ++ii) //passa por todos os caracteres de 'nome_prod'
             menu[i].nome_prod[ii] = '\0'; //preenche '\0' (vazio) em todos os caracteres de 'nome_prod'
         menu[i].custo_prod = '\0'; //preenche '\0' (vazio) em 'custo_prod'
-        menu[i].tempo_prod = '\0'; //preenche '\0' (vazio) em 'tempo_prod'
+        menu[i].tipo_prod = '\0'; //preenche '\0' (vazio) em 'tipo_prod'
 
         while (i < qtd_produtos)
         {
             menu[i].cod_prod = menu[i + 1].cod_prod; //sobe o proximo cod_prod
-            for (int ii = 0; ii <= t_nome_prod; ++ii) //passa por todos os caracteres de nome_prod
+            for (int ii = 0; ii < t_nome_prod; ++ii) //passa por todos os caracteres de nome_prod
                 menu[i].nome_prod[ii] = menu[i + 1].nome_prod[ii]; //sobe todos os caracteres de nome_prod
             menu[i].custo_prod = menu[i + 1].custo_prod; //sobe o proximo custo_prod
-            menu[i].tempo_prod = menu[i + 1].tempo_prod; //sobe o proximo tempo_prod
+            menu[i].tipo_prod = menu[i + 1].tipo_prod; //sobe o proximo tipo_prod
             ++i; //vai para o proximo produto
         }
         /*Este ciclo sera executado ate que o indice do produto seguinte (i + 1) tenha o mesmo valor que
@@ -649,14 +645,14 @@ Imprimie na tela o 'menu' atual.*/
 {
     if (qtd_produtos == 0) //se o primeiro cod_prod for '\0' (vazio), entao nao ha itens no 'menu'
         printf("\nNao ha itens no menu.\n");
-    else //apresentacao das informacoes do 'menu' caso haja produtos disponiveis
+    else
     {
-        printf("\n==================MENU=================="); //titulo da quadro
-        printf("\nCodigo Nome do Produto  Custo Tempo(min)\n"); //cabecalho da tabela
+        printf("\n===============MENU==============="); //titulo da quadro
+        printf("\nCodigo Nome do Produto  Custo Tipo\n"); //cabecalho da tabela
         for (int i = 0; menu[i].cod_prod != '\0'; ++i) //ciclo que fara a impressao dos produtos disponiveis
         {
             //impressao do 'cod_prod'
-            printf("%i     ", menu[i].cod_prod); //imprime 'cod_prod' (como tem sempre dois caracteres nao eh necessario quantidade de espacos diferentes
+            printf("%i     ", menu[i].cod_prod); //imprime 'cod_prod' (como tem sempre dois caracteres nao eh necessario quantidade de espacos diferentes)
 
             //impressao do 'nome_prod'
             for (int ii = 0; ii < t_nome_prod; ++ii) //ciclo que passa por todos os caracteres de 'nome_prod'
@@ -677,14 +673,10 @@ Imprimie na tela o 'menu' atual.*/
             else
                 printf("%.2f "  , menu[i].custo_prod);
 
-            //impressao do 'tempo_prod'
-            //dependendo do valor de 'tempo_prod' eh necessario uma quantidade de espacos para alinhar ao quadro
-            if (menu[i].tempo_prod < 10)
-                printf("         %i\n", menu[i].tempo_prod);
-            else
-                printf("        %i\n" , menu[i].tempo_prod);
+            //impressao do 'tipo_prod'
+            printf("   %c\n", menu[i].tipo_prod); //(como tem sempre um caractere nao eh necessario quantidade de espacos diferentes)
         }
-        printf("========================================\n"); //rodape do quadro
+        printf("==================================\n"); //rodape do quadro
     }
 }
 
@@ -706,7 +698,7 @@ Imprimie na tela as informacoes de um produto referido pelo 'cod_prod' indicado.
     }
     else
     {
-        printf("\nCodigo Nome do Produto  Custo Tempo(min)\n");
+        printf("\nCodigo Nome do Produto  Custo Tipo\n");
 
         //impressao do 'cod_prod'
         printf("%i     ", menu[i].cod_prod); //imprime 'cod_prod' (como tem sempre dois caracteres nao eh necessario quantidade de espacos diferentes
@@ -730,12 +722,8 @@ Imprimie na tela as informacoes de um produto referido pelo 'cod_prod' indicado.
         else
             printf("%.2f "  , menu[i].custo_prod);
 
-        //impressao do 'tempo_prod'
-        //dependendo do valor de 'tempo_prod' eh necessario uma quantidade de espacos para alinhar ao quadro
-        if (menu[i].tempo_prod < 10)
-            printf("         %i\n", menu[i].tempo_prod);
-        else
-            printf("        %i\n" , menu[i].tempo_prod);
+        //impressao do 'tipo_prod'
+        printf("   %c\n", menu[i].tipo_prod); //(como tem sempre um caractere nao eh necessario quantidade de espacos diferentes)
     }
 }
 
@@ -804,15 +792,15 @@ Verifica se o 'custo_prod' referido segue os padroes da variavel.*/
     /*Retornara 'true', e portanto valido, caso o valor de 'custo_prod' esteja no intervalo definido.*/
 }
 
-bool validar_tempo_prod (int tempo_prod)
+bool validar_tipo_prod (int tipo_prod)
 /*Objetivo da funcao
-Verifica se o 'tempo_prod' referido segue os padroes da variavel.*/
+Verifica se o 'tipo_prod' referido segue os padroes da variavel.*/
 {
-    if(tempo_prod >= min_tempo_prod && tempo_prod <= max_tempo_prod) //verifica de o 'tempo_prod' esta no limite parametrizado
+    if(tipo_prod == '1' || tipo_prod == '2' || tipo_prod == '3' || tipo_prod == '4') //verifica de o 'tipo_prod' contem as opcoes validas
         return true;
     else
         return false;
-    /*Retornara 'true', e portanto valido, caso o valor de 'tempo_prod' esteja no intervalo definido.*/
+    /*Retornara 'true', e portanto valido, caso o valor de 'tipo_prod' seja uma opcao valida.*/
 }
 
 ///Busca de dados
@@ -866,9 +854,10 @@ Retorna o valor do indice do 'nome_prod' referido, caso nao encontre sera retorn
 /**FUNCOES BASICAS**/
 //--------------------------------------
 
+/*
 int getch (void) //Linux - criacao da funcao 'getch' pois o sistema nao tem a biblioteca 'conio.h'
-/*Objetivo da funcao
-Captura o proximo caractere que o usuario digitar.*/
+//Objetivo da funcao
+//Captura o proximo caractere que o usuario digitar.
 {
     struct termios oldattr, newattr;
     int ch;
@@ -880,6 +869,7 @@ Captura o proximo caractere que o usuario digitar.*/
     tcsetattr( STDIN_FILENO, TCSANOW, &oldattr );
     return ch;
 }
+*/
 
 void limpar_buffer (void) //funcao criada para limpar o buffer do teclado (funciona em WINDOWS e LINUX)
 /*Objetivo da funcao
@@ -931,16 +921,16 @@ Substitui da string referida os espacos por underline e as letras minusculas por
 /**INFORMACOES BASICAS**/
 //--------------------------------------
 /*
-Nome do projeto: Controle de cardapio
+Nome do projeto: Controle de Menu Mickey & Donald
 
 Descricao:
-Programa que ira consultar, adicionar e remover os produtos de um cardapio
-que esta armazenado num arquivo .DAT. Desenvolvido dentro de um sistema
-oprecional linux.
+Projeto para avaliacao de desempenho na discipĺina de "Logica de programacao 1"
+do curso "Tecnologo de Analise e Desenvolvimento de Sistemas" no Instituto Federal
+de Sao Paulo - campus Sao Paulo
 
 Desenvolvedor(es):
-Leandro Paiva Higa  github: leandrophiga
-Felippe Marques da Silva de Almeida
+Felippe Marques da Silva de Almeida SP3056686
+Leandro Paiva Higa                  SP3052648
 
-Ultima atualizacao: 23-out.-2020 as 12h23
+Ultima atualizacao: 23-out.-2020 as 20h03
 */
